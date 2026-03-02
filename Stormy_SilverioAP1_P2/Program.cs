@@ -10,7 +10,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
-builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(ConStr))
+builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(ConStr));
 
 builder.Services.AddBlazoredToast();
 var app = builder.Build();
