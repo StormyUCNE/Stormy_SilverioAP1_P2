@@ -1,0 +1,39 @@
+﻿@page "/Edit{ViajeId}"
+@inject IToastService toastService
+@rendermode InteractiveServer
+
+<PageTitle>Editar Viaje Espacial</PageTitle>
+
+<EditForm Model="ViajesEspaciales" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator />
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5 class="card-title">Editar Viaje Espacial</h5>
+            </div>
+            <div class="card-body">
+                <div>
+                    <label class="form-label">Viaje ID</label>
+                    <InputNumber class="form-control" @bind-Value="ViajesEspaciales.ViajeId" />
+                    <ValidationMessage For="() => ViajesEspaciales.ViajeId" />
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-center gap-2">
+                <a href="ViajesEspaciales/Index" class="btn btn-outline-secondary bi bi-arrow-left">Volver</a>
+                <button class="btn btn-outline-primary bi bi-save">Guardar</button>
+                <button class="btn btn-outline-danger bi bi-trash">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public ViajesEspaciales ViajesEspaciales = new ViajesEspaciales();
+
+    private async Task Guardar()
+    {
+        
+    }
+
+}

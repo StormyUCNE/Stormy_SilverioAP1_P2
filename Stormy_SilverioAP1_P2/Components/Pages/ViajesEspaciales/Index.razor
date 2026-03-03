@@ -1,0 +1,58 @@
+﻿@page "/Index"
+@inject IToastService toastService
+@rendermode InteractiveServer
+<PageTitle>Index</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h5 class="card-title">Registro de Viajes Espaciales</h5>
+            <a class="btn btn-outline-primary bi bi-plus-square" href="Create">Crear</a>
+        </div>
+        <div class="card-body">
+            @*Filtros*@
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label">Desde</label>
+                    <input type="date" class="form-control"/>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Hasta</label>
+                    <input type="date" class="form-control" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label">Selecciona una Opci&oacute;n</label>
+                    <select class="form-select">
+                        <option value="0">Selecciona una Opci&oacute;n</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Buscar</label>
+                    <div class="input-group">
+                        <input class="form-control" placeholder="Buscar" />
+                        <i class="btn btn-outline-primary bi-search"></i>
+                    </div>
+                </div>
+            </div>
+
+            @*Tabla*@
+            <div class="table-responsive">
+                <QuickGrid Items="@ListaViajes.AsQueryable()" Class="table table-bordered table-striped">
+                    <PropertyColumn Property="@(p => p.ViajeId)" Title="Viaje ID" />
+                    <TemplateColumn Title="Opción">
+                        <a href="Edit/@context.ViajeId" class="btn btn-outline-primary bi bi-pencil"></a>
+                    </TemplateColumn>
+                </QuickGrid>
+                <Paginator State="paginas" />
+            </div>
+        </div>
+        <div class="card-footer">
+            <label>Total:</label>
+        </div>
+    </div>
+</div>
+@code {
+    public List<ViajesEspaciales> ListaViajes = new List<ViajesEspaciales>();
+    PaginationState paginas = new PaginationState { ItemsPerPage = 5 };
+}
