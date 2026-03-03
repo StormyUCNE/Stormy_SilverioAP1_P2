@@ -38,13 +38,16 @@
 
             @*Tabla*@
             <div class="table-responsive">
-                <QuickGrid Items="@ListaViajes.AsQueryable()" Class="table table-bordered table-striped">
+                <QuickGrid Items="@ListaViajes.AsQueryable()" Class="table table-bordered table-striped" Pagination="@paginas">
                     <PropertyColumn Property="@(p => p.ViajeId)" Title="Viaje ID" />
                     <TemplateColumn Title="Opción">
                         <a href="Edit/@context.ViajeId" class="btn btn-outline-primary bi bi-pencil"></a>
                     </TemplateColumn>
                 </QuickGrid>
-                <Paginator State="paginas" />
+                <div class="d-flex justify-content-end">
+                    <Paginator State="@paginas" />
+                </div>
+                
             </div>
         </div>
         <div class="card-footer">
