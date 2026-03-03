@@ -4,7 +4,7 @@
 
 <PageTitle>Editar Viaje Espacial</PageTitle>
 
-<EditForm Model="ViajesEspaciales" OnValidSubmit="Guardar">
+<EditForm Model="ViajesEspaciales" OnValidSubmit="Modificar">
     <DataAnnotationsValidator />
 
     <div class="container">
@@ -31,9 +31,6 @@
 @code {
     public ViajesEspaciales ViajesEspaciales = new ViajesEspaciales();
 
-    private async Task Guardar()
-    {
-        
-    }
+    private async Task Modificar(){}
 
 }
