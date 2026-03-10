@@ -1,0 +1,37 @@
+﻿@page "/Estudiantes/Index"
+@inject IToastService toastService
+@rendermode InteractiveServer
+@inject EstudiantesService estudiantesService
+<PageTitle>Estudiantes Index</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h5 class="card-title">Consulta de Estudiantes</h5>
+        </div>
+        <div class="card-body">
+            @*Tabla*@
+            <div class="table-responsive">
+                <QuickGrid Items="@ListaEstudiantes.AsQueryable()" Class="table table-bordered table-striped" Pagination="@paginas">
+                    <PropertyColumn Property="@(a => a.EstudianteId)" Title="EstudianteId" />
+                    <PropertyColumn Property="@(a => a.Nombres)" Title="Nombre" />
+                    <PropertyColumn Property="@(a => a.Email)" Title="Email" />
+                    <PropertyColumn Property="@(a => a.BalancePuntos)" Title="Balance Puntos" />
+                </QuickGrid>
+                <div class="d-flex justify-content-end">
+                    <Paginator State="@paginas" />
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+@code {
+    public List<Estudiantes> ListaEstudiantes = new List<Estudiantes>();
+    PaginationState paginas = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaEstudiantes = await estudiantesService.Listar(a => a.EstudianteId > 0);
+    }
+    
+}
