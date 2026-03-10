@@ -31,36 +31,22 @@ public class AsignacionesPuntosService(IDbContextFactory<Contexto> DbFactory)
     private async Task<bool> Modificar(AsignacionesPuntos asignaciones)
     {
         await using var contexto = await DbFactory.CreateDbContextAsync();
-
-        var asignacionAnterior = await contexto.AsignacionesPuntos
-            .Include(d => d.ListaDetalle)
-            .FirstOrDefaultAsync(a => a.IdAsignacion == asignaciones.IdAsignacion);
-
-        if (asignacionAnterior == null)
-            return false;
-
-        var estudiante = await contexto.Estudiantes
-            .FirstOrDefaultAsync(e => e.EstudianteId == asignaciones.EstudianteId);
-
+        var asignacionAnterior = await contexto.AsignacionesPuntos.Include(d => d.ListaDetalle).FirstOrDefaultAsync(a => a.IdAsignacion == asignaciones.IdAsignacion);
+        var estudiante = await contexto.Estudiantes.FirstOrDefaultAsync(e => e.EstudianteId == asignaciones.EstudianteId);
         if (estudiante != null)
-        {
             estudiante.BalancePuntos -= asignacionAnterior.TotalPuntos;
-            estudiante.BalancePuntos += asignaciones.TotalPuntos;
-        }
-
         contexto.DetalleAsignaciones.RemoveRange(asignacionAnterior.ListaDetalle);
-
-        foreach (var detalle in asignaciones.ListaDetalle)
+        foreach(var detalle in asignaciones.ListaDetalle)
         {
-            asignacionAnterior.ListaDetalle.Add(new DetalleAsignacion
-            {
-                TipoPuntoId = detalle.TipoPuntoId,
-                CantidadPuntos = detalle.CantidadPuntos
-            });
+            asignacionAnterior.ListaDetalle.Add(
+                new DetalleAsignacion { 
+                    TipoPuntoId = detalle.TipoPuntoId,
+                    CantidadPuntos = detalle.CantidadPuntos
+                }
+            );
         }
-
+        estudiante.BalancePuntos += asignaciones.TotalPuntos;
         contexto.Entry(asignacionAnterior).CurrentValues.SetValues(asignaciones);
-
         return await contexto.SaveChangesAsync() > 0;
     }
     public async Task<AsignacionesPuntos?> Buscar(int asignacionId)
@@ -84,7 +70,7 @@ public class AsignacionesPuntosService(IDbContextFactory<Contexto> DbFactory)
 
         if (estudiante != null)
             estudiante.BalancePuntos -= asignacionAnterior.TotalPuntos;
-
+        contexto.DetalleAsignaciones.RemoveRange(asignacionAnterior.ListaDetalle);
         contexto.AsignacionesPuntos.Remove(asignacionAnterior);
 
         return await contexto.SaveChangesAsync() > 0;
