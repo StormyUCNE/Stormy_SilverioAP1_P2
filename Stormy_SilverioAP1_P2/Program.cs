@@ -13,7 +13,9 @@ builder.Services.AddRazorComponents()
 var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
 builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(ConStr));
 
-builder.Services.AddScoped<ViajesEspacialesService>();
+builder.Services.AddScoped<TiposPuntosService>();
+builder.Services.AddScoped<EstudiantesService>();
+builder.Services.AddScoped<AsignacionesPuntosService>();
 
 builder.Services.AddBlazoredToast();
 var app = builder.Build();
