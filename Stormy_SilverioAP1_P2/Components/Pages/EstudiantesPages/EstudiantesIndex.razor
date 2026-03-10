@@ -14,7 +14,6 @@
                 <QuickGrid Items="@ListaEstudiantes.AsQueryable()" Class="table table-bordered table-striped" Pagination="@paginas">
                     <PropertyColumn Property="@(a => a.EstudianteId)" Title="EstudianteId" />
                     <PropertyColumn Property="@(a => a.Nombres)" Title="Nombre" />
-                    <PropertyColumn Property="@(a => a.Email)" Title="Email" />
                     <PropertyColumn Property="@(a => a.BalancePuntos)" Title="Balance Puntos" />
                 </QuickGrid>
                 <div class="d-flex justify-content-end">
