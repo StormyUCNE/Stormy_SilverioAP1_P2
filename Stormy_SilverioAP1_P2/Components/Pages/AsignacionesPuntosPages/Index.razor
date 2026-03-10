@@ -1,0 +1,92 @@
+﻿@page "/Index"
+@inject IToastService toastService
+@rendermode InteractiveServer
+@inject AsignacionesPuntosService asignacionesPuntosService
+<PageTitle>Asignaciones Index</PageTitle>
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header d-flex justify-content-between">
+            <h5 class="card-title">Consulta de Asignaciones</h5>
+            <a class="btn btn-outline-primary bi bi-plus-square" href="Create">Crear</a>
+        </div>
+        <div class="card-body">
+            @*Filtros*@
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label">Desde</label>
+                    <input type="date" class="form-control" @bind="FechaInicial"/>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Hasta</label>
+                    <input type="date" class="form-control" @bind="FechaFinal"/>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">
+                    <label class="form-label">Selecciona una Opci&oacute;n</label>
+                    <select class="form-select" @bind="Filtro" >
+                        <option value="">Seleccione una Opcion</option>
+                        <option value="Nombre">Nombre Estudiante</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Buscar</label>
+                    <div class="input-group">
+                        <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
+                        <button @onclick="Buscar" class="btn btn-outline-primary bi-search"></button>
+                    </div>
+                </div>
+            </div>
+
+            @*Tabla*@
+            <div class="table-responsive mt-5">
+                <QuickGrid Items="@ListaAsignaciones.AsQueryable()" Class="table table-bordered table-striped" Pagination="@paginas">
+                    <PropertyColumn Property="@(a => a.IdAsignacion)" Title="IdAsignacion" />
+                    <PropertyColumn Property="@(a => a.Fecha)" Title="Fecha" Format="dd/MM/yyyy" />
+                    <PropertyColumn Property="@(a => a.Estudiantes.Nombres)" Title="Esudiante"/>
+                    <PropertyColumn Property="@(a => a.TotalPuntos)" Title="TotalPuntos" />
+                    <TemplateColumn Title="Opción">
+                        <a href="Edit/@context.IdAsignacion" class="btn btn-outline-primary bi bi-pencil"></a>
+                    </TemplateColumn>
+                </QuickGrid>
+                <div class="d-flex justify-content-end">
+                    <Paginator State="@paginas" />
+                </div>
+                
+            </div>
+        </div>
+        <div class="card-footer">
+            <label>Total: @ListaAsignaciones.SelectMany(e => e.ListaDetalle).Sum(e => e.CantidadPuntos)</label>
+        </div>
+    </div>
+</div>
+@code {
+    public List<AsignacionesPuntos> ListaAsignaciones = new List<AsignacionesPuntos>();
+    public DateTime? FechaInicial { get; set; }
+    public DateTime? FechaFinal { get; set; }
+    public string Filtro { get; set; } = string.Empty;
+    public string ValorFiltro { get; set; } = string.Empty;
+    PaginationState paginas = new PaginationState { ItemsPerPage = 5 };
+
+    protected override async Task OnInitializedAsync()
+    {
+        ListaAsignaciones = await asignacionesPuntosService.Listar(a => a.IdAsignacion >0);
+    }
+    private async Task Buscar()
+    {
+        List<AsignacionesPuntos> listaFiltrada;
+        if (FechaInicial.HasValue && FechaFinal.HasValue)
+            listaFiltrada = await asignacionesPuntosService.Listar(e => e.Fecha.Date >= FechaInicial && e.Fecha.Date <= FechaFinal && e.IdAsignacion > 0);
+        else
+            listaFiltrada = await asignacionesPuntosService.Listar(e => true);
+
+        if (ValorFiltro.Trim() != "")
+        {
+            if (Filtro != "0")
+                listaFiltrada = listaFiltrada.Where(e => e.Estudiantes.Nombres.ToLower().Contains(ValorFiltro.ToLower())).ToList();
+        }
+       
+        ListaAsignaciones = listaFiltrada;
+
+    }
+}

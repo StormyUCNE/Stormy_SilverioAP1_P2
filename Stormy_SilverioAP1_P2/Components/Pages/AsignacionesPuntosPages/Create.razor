@@ -1,0 +1,138 @@
+﻿@page "/Create"
+@inject IToastService toastService
+@inject EstudiantesService estudiantesService
+@inject TiposPuntosService tiposPuntosService
+@inject AsignacionesPuntosService asignacionesPuntosService
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Crear Viaje Espacial</PageTitle>
+
+<EditForm Model="AsignacionesPuntos" OnValidSubmit="Guardar">
+    <DataAnnotationsValidator/>
+
+    <div class="container">
+        <div class="card shadow-lg">
+            <div class="card-header">
+                <h5 class="card-title">Crear Asignacion</h5>
+            </div>
+            <div class="card-body">
+                <div>
+                    <label class="form-label">Fecha</label>
+                    <InputDate class="form-control" @bind-Value="AsignacionesPuntos.Fecha"/>
+                    <ValidationMessage For="()=>AsignacionesPuntos.Fecha"/>
+                </div>
+                <div>
+                    <label class="form-label">Estudiante</label>
+                    <InputSelect @bind-Value="AsignacionesPuntos.EstudianteId" class="form-select">
+                        <option value="0">Seleccione un Estudiante</option>
+                        @foreach(var estudiante in ListaEstudiantes)
+                        {
+                            <option value="@estudiante.EstudianteId">@estudiante.Nombres</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => AsignacionesPuntos.EstudianteId" />
+                </div>
+                <div>
+                    <label class="form-label">Total Puntos</label>
+                    <InputNumber class="form-control" @bind-Value="AsignacionesPuntos.TotalPuntos" />
+                    <ValidationMessage For="() => AsignacionesPuntos.TotalPuntos" />
+                </div>
+
+                <div class="mt-3">
+                    <h5>Lista de Tipos Puntos Detalle</h5>
+                    <div class="row">
+                        <div class="col-6">
+                            <label class="form-label">Seleccione un Tipo Punto</label>
+                            <InputSelect @bind-Value="DetalleAsignacion.TipoPuntoId" class="form-select">
+                                <option value="0">Seleccione un Tipo Punto</option>
+                                @foreach (var puntos in ListaTiposPuntos)
+                                {
+                                    <option value="@puntos.TipoId">@puntos.Nombre</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-3">
+                            <button type="button" class="btn btn-outline-primary bi bi-plus-square mt-4" @onclick="GuardarDetalle">Agregar</button>
+                        </div>
+                        <div class="table-responsive mt-3">
+                            <QuickGrid Items="AsignacionesPuntos.ListaDetalle.AsQueryable()" Class="table table-bordered table-striped">
+                                <PropertyColumn Property="@(t => t.TipoPuntoId)" Title="IdAsignacion"/>
+                                <PropertyColumn Property="@(t => @ListaTiposPuntos.FirstOrDefault(p => p.TipoId == t.TipoPuntoId).Nombre)" Title="Nombre" />
+                                <PropertyColumn Property="@(t => @ListaTiposPuntos.FirstOrDefault(p => p.TipoId == t.TipoPuntoId).ValorPuntos)" Title="CantidadPuntos" />
+                                <TemplateColumn Context="detalle" Title="Opcion">
+                                    <button type="button" class="btn btn-outline-danger bi bi-trash" @onclick="() => Eliminar(detalle)">Eliminar</button>
+                                </TemplateColumn>
+                            </QuickGrid>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer d-flex justify-content-center gap-2">
+                <a href="/Index" class="btn btn-outline-secondary bi bi-arrow-left">Volver</a>
+                <button class="btn btn-outline-primary bi bi-save">Guardar</button>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    public AsignacionesPuntos AsignacionesPuntos = new AsignacionesPuntos();
+    public DetalleAsignacion DetalleAsignacion = new DetalleAsignacion();
+    public List<Estudiantes> ListaEstudiantes = new List<Estudiantes>();
+    public List<TiposPuntos> ListaTiposPuntos = new List<TiposPuntos>();
+    public string mensaje = string.Empty;
+    protected override async Task OnInitializedAsync()
+    {
+        ListaEstudiantes = await estudiantesService.Listar(e => e.EstudianteId > 0);
+        ListaTiposPuntos = await tiposPuntosService.Listar(e => e.Activo == true && e.TipoId > 0);
+    }
+    private async Task Guardar()
+    {
+        if (!AsignacionesPuntos.ListaDetalle.Any())
+        {
+            toastService.ShowError("Debe de Guardar al menos un detalle");
+            return;
+        }
+        var creado = await asignacionesPuntosService.Guardar(AsignacionesPuntos);
+        if(creado)
+        {
+            toastService.ShowSuccess("Asignacion Creada Correctamente");
+            navigationManager.NavigateTo("Index");
+        }
+    }
+
+    private async Task GuardarDetalle()
+    {
+        if (DetalleAsignacion.TipoPuntoId == 0)
+        {
+            toastService.ShowError("Debe de Seleccionar un Detalle de Tipo Punto");
+            return;
+        }
+        if (AsignacionesPuntos.ListaDetalle.Any(t => t.TipoPuntoId == DetalleAsignacion.TipoPuntoId))
+        {
+            toastService.ShowError("No se aceptan duplicados");
+            return;
+        }
+        var tipoPunto = ListaTiposPuntos.FirstOrDefault(p => p.TipoId == DetalleAsignacion.TipoPuntoId);
+        AsignacionesPuntos.ListaDetalle.Add(
+            new DetalleAsignacion
+            {
+                TipoPuntoId = tipoPunto.TipoId,
+                CantidadPuntos = tipoPunto.ValorPuntos
+            }
+        );
+        ObtenerTotalPuntos();
+        DetalleAsignacion = new DetalleAsignacion();
+    }
+    private async Task Eliminar(DetalleAsignacion detalle)
+    {
+        AsignacionesPuntos.ListaDetalle.Remove(detalle);
+        ObtenerTotalPuntos();
+        DetalleAsignacion = detalle;
+    }
+
+    private void ObtenerTotalPuntos(){
+        AsignacionesPuntos.TotalPuntos = AsignacionesPuntos.ListaDetalle.Sum(d => d.CantidadPuntos);
+    }
+}
